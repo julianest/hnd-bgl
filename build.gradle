@@ -1,0 +1,82 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
+	id 'org.sonarqube' version '5.1.0.4882'
+}
+
+group = 'com.hn.bancatlan'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// Jackson - Serialize and Deserialize Java Objects to JSON
+	implementation 'org.springframework.boot:spring-boot-jackson'
+	// SDK AWS
+	implementation platform("software.amazon.awssdk:bom:2.32.25")
+	// AWS SDK dependencies
+	implementation "software.amazon.awssdk:sqs"
+	implementation "software.amazon.awssdk:s3"
+	implementation "software.amazon.awssdk:dynamodb"
+	implementation "software.amazon.awssdk:eventbridge"
+	// Spring Docs - Swagger / OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:3.0.3'
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Testing
+	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+}
+
+// JaCoCo
+jacoco {
+	toolVersion = '0.8.13'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	finalizedBy tasks.jacocoTestReport
+}
+
+tasks.jacocoTestReport {
+	dependsOn tasks.test
+
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+}
+
+// SonarQube
+sonar {
+	properties {
+		property 'sonar.projectKey', 'ms-onboarding-data-store-api'
+		property 'sonar.projectName', 'ms-onboarding-data-store-api'
+		property 'sonar.host.url', 'http://localhost:9000'
+
+		property 'sonar.coverage.jacoco.xmlReportPaths',
+				"${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+	}
+}
